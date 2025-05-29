@@ -62,10 +62,8 @@ with col2:
     st.markdown("<h3 style='margin-bottom:10px;'>3-Year Mortality Prediction for Acute Type B Aortic Dissection</h3>", unsafe_allow_html=True)
     st.markdown("<h4 style='margin-bottom:10px;'>Model Overview</h4>", unsafe_allow_html=True)
     st.markdown("""
-    <p style='font-size:14px;'>
-    st.markdown("""
 <p style='font-size:14px;'>
-This predictive tool uses an SVM machine learning model (AUC: 0.94, Accuracy: 88.8%) to estimate 3-year mortality risk in patients with acute Type B aortic dissection.
+This predictive tool uses an SVM machine learning model (AUC: 0.94, Accuracy: 88.8%, Risk Threshold: 0.207) to estimate 3-year mortality risk in patients with acute Type B aortic dissection.
 </p>
 """, unsafe_allow_html=True)
     </p>
