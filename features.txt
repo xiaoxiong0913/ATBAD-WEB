@@ -1,0 +1,8 @@
+death(yes1,no0)
+age
+HR
+BUN
+coronary heart disease
+HGB
+hospitalization
+renal dysfunction
