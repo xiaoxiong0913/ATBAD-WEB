@@ -27,7 +27,7 @@ feature_ranges = {
     "coronary heart disease": ["No", "Yes"],  # Coronary heart disease
     "HGB": list(range(50, 201)),  # Hemoglobin range
     "hospitalization": list(range(1, 101)),  # Hospitalization days
-    "renal insufficiency": ["No", "Yes"]  # Renal insufficiency
+    "renal insufficiency": ["No", "Yes"]  # Renal insufficiency (UI label)
 }
 
 normal_ranges = {
@@ -81,12 +81,15 @@ with col2:
             "hospitalization": hospitalization_days,
             "BUN": bun,
             "coronary heart disease": coronary_binary,
-            "renal insufficiency": renal_binary
+            "renal dysfunction": renal_binary  # use model's feature name
         }
 
         try:
             # Convert to DataFrame with correct feature names
-            feature_order = ['age', 'HR', 'HGB', 'hospitalization', 'BUN', 'coronary heart disease', 'renal insufficiency']
+            feature_order = [
+                'age', 'HR', 'HGB', 'hospitalization', 'BUN',
+                'coronary heart disease', 'renal dysfunction'
+            ]
             data_df = pd.DataFrame([data], columns=feature_order)
             
             # Standardize data
