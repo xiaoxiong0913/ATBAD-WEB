@@ -21,13 +21,13 @@ except FileNotFoundError as e:
 
 # Feature names and ranges
 feature_ranges = {
-    "age": list(range(20, 101)),  # Age range
-    "HR": list(range(30, 181)),  # Heart rate range
-    "BUN": [round(x * 0.1, 1) for x in range(10, 501)],  # BUN range 1.0–50.0
-    "coronary heart disease": ["No", "Yes"],  # Coronary heart disease
-    "HGB": list(range(50, 201)),  # Hemoglobin range
-    "hospitalization": list(range(1, 101)),  # Hospitalization days
-    "renal insufficiency": ["No", "Yes"]  # UI label
+    "age": list(range(20, 101)),
+    "HR": list(range(30, 181)),
+    "HGB": list(range(50, 201)),
+    "hospitalization": list(range(1, 101)),
+    "BUN": [round(x * 0.1, 1) for x in range(10, 501)],
+    "coronary heart disease": ["No", "Yes"],
+    "renal insufficiency": ["No", "Yes"]
 }
 
 normal_ranges = {
@@ -73,11 +73,11 @@ with col2:
             "hospitalization": hospitalization_days,
             "BUN": bun,
             "coronary heart disease": coronary_binary,
-            "renal dysfunction": renal_binary  # 对应训练时的名称
+            "renal dysfunction": renal_binary  # matches model's feature name
         }
 
         try:
-            # 关键：保持与训练时一模一样的顺序
+            # Keep the exact order used during fit
             feature_order = [
                 'age',
                 'HR',
@@ -89,11 +89,27 @@ with col2:
             ]
             data_df = pd.DataFrame([data], columns=feature_order)
 
-            data_scaled = scaler.transform(data_df)
+            # --- Debugging: print expected vs actual feature names ---
+            expected = getattr(scaler, 'feature_names_in_', None)
+            actual = list(data_df.columns)
+            st.write("**Expected feature names (from scaler):**", expected)
+            st.write("**Actual DataFrame columns:**", actual)
+            # ----------------------------------------------------------------
+
+            # Attempt to scale
+            try:
+                data_scaled = scaler.transform(data_df)
+            except ValueError as ve:
+                st.error(f"Scaler ValueError: {ve}")
+                st.error(f"Expected (scaler.feature_names_in_): {expected}")
+                st.error(f"Provided (data_df.columns): {actual}")
+                st.stop()
+
+            # Predict
             prediction = model.predict_proba(data_scaled)[:, 1][0]
 
-            # Display risk
-            if prediction >= 0.207:
+            # Display prediction results with color coding and styling
+            if prediction >= 0.207:  # High risk
                 st.markdown(
                     f"<div style='background-color:#ffcccc; padding:15px; border-radius:10px; margin-bottom:20px;'>"
                     f"<span style='color:#d32f2f; font-size:20px; font-weight:bold;'>Predicted Mortality Risk: <b>{prediction * 100:.2f}%</b> (High Risk)</span><br>"
@@ -101,7 +117,7 @@ with col2:
                     f"</div>",
                     unsafe_allow_html=True
                 )
-            else:
+            else:  # Low risk
                 st.markdown(
                     f"<div style='background-color:#e6ffe6; padding:15px; border-radius:10px; margin-bottom:20px;'>"
                     f"<span style='color:#388e3c; font-size:20px; font-weight:bold;'>Predicted Mortality Risk: <b>{prediction * 100:.2f}%</b> (Low Risk)</span><br>"
@@ -110,63 +126,63 @@ with col2:
                     unsafe_allow_html=True
                 )
 
-            # Recommendations panel
+            # Personalized medical recommendations
             st.subheader("Personalized Medical Recommendations")
             st.markdown("<div style='background-color:#f8f9fa; padding:15px; border-radius:10px;'>", unsafe_allow_html=True)
-
-            # Heart rate
+            
+            # Heart rate recommendations
             if hr < normal_ranges["HR"][0]:
-                st.markdown(f"<div style='margin-bottom:10px;'>❤️ <b>Heart Rate</b> ({hr} bpm): Below normal (60–100). Consider: Adjust meds, evaluate conduction</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:10px;'>❤️ <b>Heart Rate</b> ({hr} bpm): Below normal range (60-100 bpm). Consider: Adjusting antihypertensive medications, evaluating for conduction disorders</div>", unsafe_allow_html=True)
             elif hr > normal_ranges["HR"][1]:
-                st.markdown(f"<div style='margin-bottom:10px;'>❤️ <b>Heart Rate</b> ({hr} bpm): Above normal (60–100). Consider: Beta-blockers for control</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:10px;'>❤️ <b>Heart Rate</b> ({hr} bpm): Above normal range (60-100 bpm). Consider: Aggressive heart rate control with beta-blockers</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div style='margin-bottom:10px;'>✅ <b>Heart Rate</b> ({hr} bpm): Within normal range</div>", unsafe_allow_html=True)
-
-            # BUN
+            
+            # BUN recommendations
             if bun < normal_ranges["BUN"][0]:
-                st.markdown(f"<div style='margin-bottom:10px;'>🩸 <b>BUN</b> ({bun}): Below normal (2.9–8.2). Consider: Nutrition, liver eval</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:10px;'>🩸 <b>Blood Urea Nitrogen</b> ({bun} mmol/L): Below normal range (2.9-8.2 mmol/L). Consider: Nutritional assessment and liver function evaluation</div>", unsafe_allow_html=True)
             elif bun > normal_ranges["BUN"][1]:
-                st.markdown(f"<div style='margin-bottom:10px;'>🩸 <b>BUN</b> ({bun}): Above normal (2.9–8.2). Consider: Renal assessment, hydration</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:10px;'>🩸 <b>Blood Urea Nitrogen</b> ({bun} mmol/L): Above normal range (2.9-8.2 mmol/L). Consider: Renal function assessment, protein restriction, hydration optimization</div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div style='margin-bottom:10px;'>✅ <b>BUN</b> ({bun}): Within normal range</div>", unsafe_allow_html=True)
-
-            # Hemoglobin
+                st.markdown(f"<div style='margin-bottom:10px;'>✅ <b>Blood Urea Nitrogen</b> ({bun} mmol/L): Within normal range</div>", unsafe_allow_html=True)
+            
+            # Hemoglobin recommendations
             if hgb < normal_ranges["HGB"][0]:
-                st.markdown(f"<div style='margin-bottom:10px;'>🔴 <b>HGB</b> ({hgb}): Below normal (120–160). Consider: Anemia workup</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:10px;'>🔴 <b>Hemoglobin</b> ({hgb} g/L): Below normal range (120-160 g/L). Consider: Anemia workup, iron supplementation, or erythropoietin therapy</div>", unsafe_allow_html=True)
             elif hgb > normal_ranges["HGB"][1]:
-                st.markdown(f"<div style='margin-bottom:10px;'>🔴 <b>HGB</b> ({hgb}): Above normal (120–160). Consider: Monitor viscosity</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:10px;'>🔴 <b>Hemoglobin</b> ({hgb} g/L): Above normal range (120-160 g/L). Consider: Monitoring for hyperviscosity syndrome, ensuring adequate hydration</div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"<div style='margin-bottom:10px;'>✅ <b>HGB</b> ({hgb}): Within normal range</div>", unsafe_allow_html=True)
-
-            # Coronary heart disease
-            if coronary_binary:
-                st.markdown(f"<div style='margin-bottom:10px;'>⚠️ <b>Coronary Heart Disease</b>: Present. Consider: Antiplatelets, statins, revascularization eval</div>", unsafe_allow_html=True)
-
-            # Renal insufficiency
-            if renal_binary:
-                st.markdown(f"<div style='margin-bottom:10px;'>⚠️ <b>Renal Insufficiency</b>: Present. Consider: Nephrology consult, avoid nephrotoxins</div>", unsafe_allow_html=True)
-
-            # Hospitalization days
+                st.markdown(f"<div style='margin-bottom:10px;'>✅ <b>Hemoglobin</b> ({hgb} g/L): Within normal range</div>", unsafe_allow_html=True)
+            
+            # Coronary heart disease recommendations
+            if coronary_binary == 1:
+                st.markdown(f"<div style='margin-bottom:10px;'>⚠️ <b>Coronary Heart Disease</b>: Present. Consider: Optimizing antiplatelet therapy, statins, and evaluation for revascularization</div>", unsafe_allow_html=True)
+            
+            # Renal insufficiency recommendations
+            if renal_binary == 1:
+                st.markdown(f"<div style='margin-bottom:10px;'>⚠️ <b>Renal Insufficiency</b>: Present. Consider: Nephrology consultation, avoiding nephrotoxic agents, BP target <130/80 mmHg</div>", unsafe_allow_html=True)
+            
+            # Hospitalization recommendations
             if hospitalization_days > 14:
-                st.markdown(f"<div style='margin-bottom:10px;'>⏱️ <b>Hospital Stay</b> ({hospitalization_days} days): Extended. Consider: Complication review, rehab planning</div>", unsafe_allow_html=True)
-
-            # General management
+                st.markdown(f"<div style='margin-bottom:10px;'>⏱️ <b>Hospitalization Duration</b> ({hospitalization_days} days): Extended stay. Consider: Comprehensive complication assessment and rehabilitation planning</div>", unsafe_allow_html=True)
+            
+            # General management recommendations
             st.markdown("""
             <div style='margin-top:20px;'>
             <b>Comprehensive Management Recommendations:</b>
             <ul style='margin-top:10px;'>
-                <li>Strict BP control (SBP &lt;120 mmHg)</li>
-                <li>CTA surveillance every 6–12 months</li>
-                <li>Smoking cessation & lipid management</li>
-                <li>Avoid strenuous activity</li>
-                <li>Evaluate recurrent chest/back pain immediately</li>
-                <li>Consider TEVAR where indicated</li>
+                <li>Strict blood pressure control (target SBP &lt;120 mmHg)</li>
+                <li>Regular imaging surveillance (CTA every 6-12 months)</li>
+                <li>Smoking cessation and lipid management</li>
+                <li>Avoidance of strenuous physical activity</li>
+                <li>Immediate evaluation for recurrent chest/back pain</li>
+                <li>Consideration of TEVAR for appropriate candidates</li>
                 <li>Annual cardiology follow-up</li>
             </ul>
             </div>
             """, unsafe_allow_html=True)
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
+            
+            st.markdown("</div>", unsafe_allow_html=True)  # Close recommendation container
+                
         except Exception as e:
-            st.error(f"Prediction error: {e}")
+            st.error(f"Unexpected error: {e}")
