@@ -31,9 +31,9 @@ feature_ranges = {
 }
 
 normal_ranges = {
-    "HR": (60, 100),     # Normal heart rate
-    "BUN": (2.9, 8.2),   # Normal BUN
-    "HGB": (120, 160)    # Normal hemoglobin
+    "HR": (60, 100),
+    "BUN": (2.9, 8.2),
+    "HGB": (120, 160)
 }
 
 # Page layout: two columns
@@ -51,7 +51,6 @@ with col1:
         bun = st.selectbox('Blood Urea Nitrogen (BUN, mmol/L)', feature_ranges["BUN"], index=30)
         coronary = st.selectbox('Coronary Heart Disease', feature_ranges["coronary heart disease"], index=0)
         renal = st.selectbox('Renal Insufficiency', feature_ranges["renal insufficiency"], index=0)
-
         submit_button = st.form_submit_button("Predict")
 
 with col2:
@@ -70,21 +69,21 @@ with col2:
         data = {
             "age": age,
             "HR": hr,
-            "BUN": bun,
             "HGB": hgb,
             "hospitalization": hospitalization_days,
+            "BUN": bun,
             "coronary heart disease": coronary_binary,
-            "renal dysfunction": renal_binary  # match model's feature name
+            "renal dysfunction": renal_binary  # 对应训练时的名称
         }
 
         try:
-            # Ensure the exact same order used during model.fit
+            # 关键：保持与训练时一模一样的顺序
             feature_order = [
                 'age',
                 'HR',
-                'BUN',
                 'HGB',
                 'hospitalization',
+                'BUN',
                 'coronary heart disease',
                 'renal dysfunction'
             ]
