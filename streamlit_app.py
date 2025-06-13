@@ -27,7 +27,7 @@ feature_ranges = {
     "coronary heart disease": ["No", "Yes"],  # Coronary heart disease
     "HGB": list(range(50, 201)),  # Hemoglobin range
     "hospitalization": list(range(1, 101)),  # Hospitalization days
-    "renal dysfunction": ["No", "Yes"]  # Renal dysfunction
+    "renal insufficiency": ["No", "Yes"]  # Renal insufficiency
 }
 
 normal_ranges = {
@@ -48,11 +48,11 @@ with col1:
     with st.form("selection_form"):
         age = st.selectbox('Age (years)', options=feature_ranges["age"], index=30)
         hr = st.selectbox('Heart Rate (HR, bpm)', options=feature_ranges["HR"], index=40)
-        bun = st.selectbox('Blood Urea Nitrogen (BUN, mmol/L)', options=feature_ranges["BUN"], index=30)
-        coronary = st.selectbox('Coronary Heart Disease', options=feature_ranges["coronary heart disease"], index=0)
         hgb = st.selectbox('Hemoglobin (HGB, g/L)', options=feature_ranges["HGB"], index=70)
         hospitalization_days = st.selectbox('Hospitalization Days', options=feature_ranges["hospitalization"], index=9)
-        renal = st.selectbox('Renal Dysfunction', options=feature_ranges["renal dysfunction"], index=0)
+        bun = st.selectbox('Blood Urea Nitrogen (BUN, mmol/L)', options=feature_ranges["BUN"], index=30)
+        coronary = st.selectbox('Coronary Heart Disease', options=feature_ranges["coronary heart disease"], index=0)
+        renal = st.selectbox('Renal Insufficiency', options=feature_ranges["renal insufficiency"], index=0)
 
         # Submit button
         submit_button = st.form_submit_button("Predict")
@@ -77,16 +77,16 @@ with col2:
         data = {
             "age": age,
             "HR": hr,
-            "BUN": bun,
-            "coronary heart disease": coronary_binary,
             "HGB": hgb,
             "hospitalization": hospitalization_days,
-            "renal dysfunction": renal_binary
+            "BUN": bun,
+            "coronary heart disease": coronary_binary,
+            "renal insufficiency": renal_binary
         }
 
         try:
             # Convert to DataFrame with correct feature names
-            feature_order = ['age', 'HR', 'BUN', 'coronary heart disease', 'HGB', 'hospitalization', 'renal dysfunction']
+            feature_order = ['age', 'HR', 'HGB', 'hospitalization', 'BUN', 'coronary heart disease', 'renal insufficiency']
             data_df = pd.DataFrame([data], columns=feature_order)
             
             # Standardize data
@@ -145,9 +145,9 @@ with col2:
             if coronary_binary == 1:
                 st.markdown(f"<div style='margin-bottom:10px;'>⚠️ <b>Coronary Heart Disease</b>: Present. Consider: Optimizing antiplatelet therapy, statins, and evaluation for revascularization</div>", unsafe_allow_html=True)
             
-            # Renal dysfunction recommendations
+            # Renal insufficiency recommendations
             if renal_binary == 1:
-                st.markdown(f"<div style='margin-bottom:10px;'>⚠️ <b>Renal Dysfunction</b>: Present. Consider: Nephrology consultation, avoiding nephrotoxic agents, BP target <130/80 mmHg</div>", unsafe_allow_html=True)
+                st.markdown(f"<div style='margin-bottom:10px;'>⚠️ <b>Renal Insufficiency</b>: Present. Consider: Nephrology consultation, avoiding nephrotoxic agents, BP target <130/80 mmHg</div>", unsafe_allow_html=True)
             
             # Hospitalization recommendations
             if hospitalization_days > 14:
